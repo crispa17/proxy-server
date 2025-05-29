@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const app = express();
 
-const allowedOrigins = ['http://localhost:4200', 'https://tuo-dominio.vercel.app'];
+const allowedOrigins = ['http://localhost:4200', 'proxy-server-one-theta.vercel.app'];
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
