@@ -4,8 +4,24 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+const allowedOrigins = ['http://localhost:4200', 'https://tuo-dominio.vercel.app']; // Aggiungi qui altri domini se necessario
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+app.options('/api/ai', cors());
+
 
 app.post('/api/ai', async (req, res) => {
     const prompt = req.body.prompt;
@@ -24,7 +40,7 @@ app.post('/api/ai', async (req, res) => {
         res.json(response.data);
     } catch (error) {
         console.error('AI Request Error:', error.message);
-        res.status(500).json({ error: 'AI Request Error:' });
+        res.status(500).json({ error: 'AI Request Error' });
     }
 });
 
