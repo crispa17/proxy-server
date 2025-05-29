@@ -1,23 +1,22 @@
 const axios = require("axios");
 
 module.exports = async (req, res) => {
-    // Imposta manualmente gli header CORS
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-    // Gestione preflight
+    // ✅ Gestione della richiesta preflight (OPTIONS)
     if (req.method === "OPTIONS") {
-        return res.status(200).end();
+        return res.status(200).end(); // Terminare qui il preflight
     }
 
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const prompt = req.body.prompt;
-
     try {
+        const prompt = req.body.prompt;
+
         const response = await axios.post(
             "https://api-inference.huggingface.co/models/google/flan-t5-small",
             { inputs: prompt },
