@@ -3,18 +3,15 @@ const axios = require("axios");
 module.exports = async (req, res) => {
     console.log("Richiesta ricevuta. Metodo:", req.method);
 
-    // ✅ Header CORS (rimangono uguali, ma ora vercel.json li gestisce principalmente per OPTIONS)
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-    // ✅ Gestione preflight CORS (rimane utile per test locali o fallback)
     if (req.method === "OPTIONS") {
         console.log("Gestione richiesta OPTIONS (preflight) all'interno della funzione.");
         return res.status(200).end();
     }
 
-    // ❌ Solo POST è accettato
     if (req.method !== "POST") {
         console.warn(`Metodo non consentito: ${req.method}`);
         return res.status(405).json({ error: "Method not allowed" });
@@ -28,45 +25,57 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: "Missing or invalid prompt" });
         }
 
-        // --- INIZIO DELLE MODIFICHE QUI ---
+        // --- Modifiche cruciali per il formato dell'input per Zephyr ---
 
-        // ✅ Nuovo URL per l'API di Chat Completion del provider Novita
         const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/" + "HuggingFaceH4/zephyr-7b-beta";
-        const MODEL_NAME = "HuggingFaceH4/zephyr-7b-beta"; // Il modello che vuoi usare
+        const MODEL_NAME = "HuggingFaceH4/zephyr-7b-beta";
 
-        console.log(`Invio richiesta a Hugging Face Inference API (Novita) per il modello: ${MODEL_NAME}...`);
+        // ✅ Costruisci il prompt nel formato specifico per Zephyr Chat Models
+        // Questo è il formato conversazionale che Zephyr si aspetta come singola stringa di input.
+        const formattedPrompt = `<|user|>\n${prompt}<|endoftext|>\n<|assistant|>`;
 
+        console.log(`Invio richiesta a Hugging Face Inference API (Standard) per il modello: ${MODEL_NAME}...`);
+        console.log(`Prompt inviato (formattato): ${formattedPrompt}`); // Logga il prompt formattato
 
         const hfResponse = await axios.post(
             HUGGINGFACE_API_URL,
             {
-                // ✅ Nuovo formato del payload per Chat Completions (tipo OpenAI)
-                model: MODEL_NAME,
-                messages: [
-                    {
-                        role: "user",
-                        content: prompt, // Il prompt dal tuo frontend Angular
-                    },
-                ],
-                // Puoi aggiungere altri parametri qui, come temperature, max_tokens, ecc.
-                // temperature: 0.7,
-                // max_tokens: 150,
+                // ✅ L'API Inference standard si aspetta una singola stringa (o un array di stringhe) per 'inputs'
+                inputs: formattedPrompt,
+                // Aggiungiamo alcuni parametri comuni per la generazione di testo
+                parameters: {
+                    max_new_tokens: 250, // Limita la lunghezza della risposta
+                    temperature: 0.7,    // Controlla la creatività (0.0 è più deterministico)
+                    // Non includere return_full_text: false qui, altrimenti il modello potrebbe non restituire nulla
+                },
+                // options: {
+                //     use_cache: false // Utile per test, disabilita la cache di Hugging Face
+                // }
             },
             {
                 headers: {
-                    // La chiave API di Hugging Face è necessaria per autenticarsi con il router
                     Authorization: `Bearer ${process.env.HF_API_KEY}`,
-                    "Content-Type": "application/json", // Specifica il tipo di contenuto
+                    "Content-Type": "application/json",
                 },
             }
         );
 
-        console.log("Risposta ricevuta da Hugging Face (Novita).");
+        console.log("Risposta ricevuta da Hugging Face (Standard API).");
 
-        // ✅ Estrai la risposta nel formato delle chat completions
-        // La risposta sarà simile a { choices: [{ message: { role: "assistant", content: "..." } }] }
-        if (hfResponse.data && hfResponse.data.choices && hfResponse.data.choices.length > 0) {
-            return res.status(200).json(hfResponse.data.choices[0].message);
+        // ✅ Estrai la risposta, ora dovrebbe essere più semplice
+        // Il risultato è un array, il cui primo elemento contiene il testo generato.
+        if (hfResponse.data && hfResponse.data.length > 0 && hfResponse.data[0].generated_text) {
+            // Zephyr restituisce l'intera conversazione, estraiamo solo l'ultima parte dell'assistente
+            const fullResponse = hfResponse.data[0].generated_text;
+            const assistantMessageMatch = fullResponse.match(/<\|assistant\|>\s*(.*?)(?:<\|endoftext\|>|$)/s); // Modifica la regex per essere più robusta
+            
+            if (assistantMessageMatch && assistantMessageMatch[1]) {
+                return res.status(200).json({ content: assistantMessageMatch[1].trim() });
+            } else {
+                // Se la regex non trova il match, restituisci comunque l'intero testo generato
+                console.warn("Formato risposta Zephyr inatteso, restituisco il testo completo.");
+                return res.status(200).json({ content: fullResponse.trim() });
+            }
         } else {
             console.error("Risposta inaspettata dall'AI:", hfResponse.data);
             return res.status(500).json({ error: "Unexpected response from AI" });
@@ -74,10 +83,9 @@ module.exports = async (req, res) => {
 
     } catch (error) {
         console.error("AI Request Error:", error.message);
-        // Se c'è una risposta HTTP, puoi loggare anche quella per più dettagli
         if (error.response) {
-            console.error("Errore risposta HF (Novita) - Status:", error.response.status);
-            console.error("Errore risposta HF (Novita) - Data:", error.response.data);
+            console.error("Errore risposta HF (Standard API) - Status:", error.response.status);
+            console.error("Errore risposta HF (Standard API) - Data:", error.response.data);
         }
         return res.status(500).json({ error: "AI Request Failed" });
     }
