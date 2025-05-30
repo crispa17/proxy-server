@@ -1,40 +1,23 @@
 const axios = require("axios");
 
 module.exports = async (req, res) => {
-    // Logga il metodo della richiesta in arrivo per debugging.
+    // Logga il metodo della richiesta in arrivo per debugging
     console.log("Richiesta ricevuta. Metodo:", req.method);
 
-    // ---
-    // ✅ Impostazione degli Header CORS (Cross-Origin Resource Sharing)
-    // Questi header devono essere impostati all'inizio per garantire che siano presenti
-    // su *ogni* risposta, incluse quelle per le richieste OPTIONS (preflight).
-    // ---
     res.setHeader("Access-Control-Allow-Origin", "*"); // Permette richieste da qualsiasi origine.
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS"); // Specifica i metodi HTTP consentiti.
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specifica gli header consentiti nelle richieste.
 
-    // ---
-    // ✅ Gestione delle Richieste Preflight CORS (Metodo OPTIONS)
-    // I browser inviano una richiesta OPTIONS prima delle richieste "complesse" (come POST)
-    // per verificare se il server permette la richiesta effettiva.
-    // Dobbiamo rispondere con uno status 200 OK e gli header CORS appropriati.
-    // ---
     if (req.method === "OPTIONS") {
         console.log("Gestione richiesta OPTIONS (preflight).");
-        return res.status(200).end(); // Termina la richiesta OPTIONS con successo.
+        return res.status(200).end();
     }
 
-    // ---
-    // ❌ Restrizione del Metodo HTTP: Accettiamo solo richieste POST per la logica principale.
-    // ---
+    
     if (req.method !== "POST") {
         console.warn(`Metodo non consentito: ${req.method}`);
         return res.status(405).json({ error: "Method not allowed" });
     }
-
-    // ---
-    // ✅ Logica Principale: Gestione della Richiesta POST per l'API di Hugging Face.
-    // ---
     try {
         const { prompt } = req.body; // Estrae il 'prompt' dal corpo della richiesta.
 

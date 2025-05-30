@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "index.js",
+            "src": "api/ai.js",
             "use": "@vercel/node"
         }
     ],
@@ -10,9 +10,28 @@
         {
             "src": "/api/ai",
             "methods": [
-                "POST"
+                "POST",
+                "OPTIONS"
             ],
-            "dest": "/index.js"
+            "dest": "/api/ai.js"
+        },
+        {
+            "src": "/api/ai",
+            "methods": ["OPTIONS"],
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization"
+            },
+            "continue": true
+        },
+        {
+            "src": "/api/ai",
+            "methods": ["POST"],
+            "headers": {
+                "Access-Control-Allow-Origin": "*"
+            },
+            "continue": true
         }
     ]
 }
