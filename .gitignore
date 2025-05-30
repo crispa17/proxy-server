@@ -18,3 +18,4 @@ bin-release/
 .env
 node_modules/
 .env
+.vercel
