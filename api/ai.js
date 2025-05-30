@@ -36,6 +36,8 @@ module.exports = async (req, res) => {
 
         console.log(`Invio richiesta a Hugging Face Inference API (Novita) per il modello: ${MODEL_NAME}...`);
 
+        console.log(process.env.HF_API_KEY)
+
         const hfResponse = await axios.post(
             HUGGINGFACE_API_URL,
             {
