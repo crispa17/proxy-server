@@ -31,8 +31,8 @@ module.exports = async (req, res) => {
         // --- INIZIO DELLE MODIFICHE QUI ---
 
         // ✅ Nuovo URL per l'API di Chat Completion del provider Novita
-        const HUGGINGFACE_API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions";
-        const MODEL_NAME = "deepseek-ai/DeepSeek-R1-0528"; // Il modello che vuoi usare
+        const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/" + "HuggingFaceH4/zephyr-7b-beta";
+        const MODEL_NAME = "HuggingFaceH4/zephyr-7b-beta"; // Il modello che vuoi usare
 
         console.log(`Invio richiesta a Hugging Face Inference API (Novita) per il modello: ${MODEL_NAME}...`);
 
