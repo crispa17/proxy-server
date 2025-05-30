@@ -34,9 +34,10 @@ module.exports = async (req, res) => {
         const HUGGINGFACE_API_URL = "https://router.huggingface.co/novita/v3/openai/chat/completions";
         const MODEL_NAME = "deepseek-ai/DeepSeek-R1-0528"; // Il modello che vuoi usare
 
+        console.log(process.env.HF_API_KEY)
+
         console.log(`Invio richiesta a Hugging Face Inference API (Novita) per il modello: ${MODEL_NAME}...`);
 
-        console.log(process.env.HF_API_KEY)
 
         const hfResponse = await axios.post(
             HUGGINGFACE_API_URL,
