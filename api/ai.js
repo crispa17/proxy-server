@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
         console.log("Invio richiesta a Hugging Face Inference API...");
         // Effettua la richiesta POST all'API di Hugging Face.
         const hfResponse = await axios.post(
-            "https://api-inference.huggingface.co/models/google/flan-t5-small",
+            "https://router.huggingface.co/novita/v3/openai/chat/completions",
             { inputs: prompt }, // Invia il prompt come input.
             {
                 headers: {
