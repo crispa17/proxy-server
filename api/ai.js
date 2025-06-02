@@ -46,10 +46,11 @@ module.exports = async (req, res) => {
                         role: "user",
                         content: prompt,
                     },
+
                 ],
-                // Puoi aggiungere altri parametri qui, es:
-                // temperature: 0.7,
-                // max_tokens: 250,
+                response_format: { "type": "json_object"},
+                temperature: 0.7,
+                max_tokens: 250,
             },
             {
                 headers: {
