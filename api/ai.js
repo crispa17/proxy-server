@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
         const mistralResponse = await axios.post(
             MISTRAL_API_URL,
             {
-                // ✅ Formato del payload standard per le Chat Completions (come OpenAI)
                 model: MODEL_NAME,
                 messages: [
                     {
