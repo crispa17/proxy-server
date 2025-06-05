@@ -1,9 +1,26 @@
 const axios = require("axios");
+const fs = require('fs');
+const path = require('path');
+
+
+const systemPromptPath = path.join(__dirname, 'aiSystemPrompt.txt'); // Assicurati che il percorso sia corretto
+const systemPrompt = fs.readFileSync(systemPromptPath, 'utf8');
 
 module.exports = async (req, res) => {
     console.log("Request received. Method:", req.method);
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    const allowedOrigins = [
+        'https://shopping-assistant-three.vercel.app',
+        'http://localhost:4200'
+    ];
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+        console.warn(`Origin ${origin} not allowed.`);
+    }
+
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
@@ -18,7 +35,7 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { prompt } = req.body; // This 'prompt' now includes the user's request + current list context from Angular
+        const { prompt } = req.body;
 
         if (!prompt || typeof prompt !== "string") {
             console.error("Error: Missing or invalid prompt.");
@@ -26,33 +43,12 @@ module.exports = async (req, res) => {
         }
 
         const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
-        const MODEL_NAME = "mistral-tiny"; // Or "mistral-small" for more capability
+        const MODEL_NAME = "mistral-tiny";
 
-        // Inject the detailed AI instructions (system prompt) here!
-        const systemPrompt = 
-            `You are a shopping list assistant. Your goal is to suggest items to add to a shopping list based on user requests and current list context.
-            Your response MUST be a JSON object with a single top-level key "actions".
-            The "actions" key's value MUST be an array of objects. Each object represents an "add" action.
-
-            - If type is "add":
-            - It MUST have an "item" object.
-            - The "item" object MUST have a "name" (string).
-            - It MAY have "quantity" (number) and "unit" (string, choose from 'pcs', 'g', 'kg', 'ml', 'l', 'pack', 'can', 'bottle').
-            - If quantity/unit are not specified by user, default quantity to 1 and omit unit.
-
-            Do NOT include any other text or explanation outside the JSON.
-            Provide a brief summary message in the "message" field of the JSON.
-
-            Example JSON structure:
-            {
-            "actions": [
-                { "type": "add", "item": { "name": "Pasta", "quantity": 500, "unit": "g" } },
-                { "type": "add", "item": { "name": "Tomatoes", "quantity": 1, "unit": "kg" } },
-                { "type": "add", "item": { "name": "Mozzarella" } }
-            ],
-            "message": "Here are some items for your requested list!"
-            }
-            If no items are suggested, return an empty "actions" array.`;
+        if (!systemPrompt) {
+            console.error("Error: AI System Prompt is not loaded.");
+            return res.status(500).json({ error: "Server configuration error: AI System Prompt not found." });
+        }
 
         console.log(`Sending request to Mistral AI for model: ${MODEL_NAME}...`);
 
@@ -61,15 +57,11 @@ module.exports = async (req, res) => {
             {
                 model: MODEL_NAME,
                 messages: [
-                    { role: "system", content: systemPrompt }, // The system prompt with rules
-                    { role: "user", content: prompt },         // The user's specific request and list context
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: prompt },
                 ],
-                response_format: { "type": "json_object" },
                 temperature: 0.7,
                 max_tokens: 500,
-                // ✅ IMPORTANT: If Mistral AI supports 'response_format' for JSON, add it here:
-                // response_format: { type: "json_object" }
-                // Check Mistral AI documentation for this option. It greatly improves JSON reliability.
             },
             {
                 headers: {
