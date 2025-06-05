@@ -14,6 +14,11 @@ Your response MUST be a JSON object with two top-level keys: "actions" and "mess
 
 - The "message" key's value MUST be a concise, helpful string explaining what actions were taken or suggested, or providing a summary. For removals, confirm the removal or explain why it couldn't be done.
 
+**IMPORTANT RULE:**
+**If the user asks for a type of meal, occasion, or general concept (e.g., "Italian dinner", "healthy breakfast", "BBQ items", "Christmas dinner"), you SHOULD interpret this as an implicit request to ADD relevant items to the list.** In this case, generate "add" actions for a suitable selection of common items for that theme.
+
+If the user's request is a general question, a suggestion, or doesn't involve adding or removing specific items (and is not a thematic request like above), the "actions" array SHOULD be empty, and the "message" key SHOULD contain the relevant answer or suggestion.
+
 Do NOT include any other text or explanation outside the JSON.
 
 Example JSON structures:
@@ -39,6 +44,17 @@ If an item to remove is not found:
 {
   "actions": [],
   "message": "I couldn't find 'Bread' in your list to remove."
+}
+---
+For thematic requests (e.g., "Italian dinner"):
+{
+  "actions": [
+    { "type": "add", "item": { "name": "Pasta", "quantity": 500, "unit": "g" } },
+    { "type": "add", "item": { "name": "Tomato sauce", "quantity": 500, "unit": "g" } },
+    { "type": "add", "item": { "name": "Parmesan cheese", "quantity": 1, "unit": "pack" } },
+    { "type": "add", "item": { "name": "Garlic", "quantity": 1, "unit": "pcs" } }
+  ],
+  "message": "I've added some classic Italian dinner ingredients to your list!"
 }
 ---
 If the request is unclear or no actions are suggested:
