@@ -27,8 +27,8 @@ Example JSON structures:
 For adding items:
 {
   "actions": [
-    { "type": "add", "item": { "name": "Pasta", "quantity": 500, "unit": "g", "unitCost": "1.00€", "totalCost": "1.00€"} },
-    { "type": "add", "item": { "name": "Tomatoes", "quantity": 2, "unit": "kg", "unitCost": "2.00€", "totalCost": "4.00€" } }
+    { "type": "add", "item": { "name": "Pasta", "quantity": 500, "unit": "g", "unitCost": "1.00", "totalCost": "1.00"} },
+    { "type": "add", "item": { "name": "Tomatoes", "quantity": 2, "unit": "kg", "unitCost": "2.00", "totalCost": "4.00" } }
   ],
   "message": "I've added pasta and tomatoes to your list." (you can also give some tips/recommendations for the recipes)
 }
