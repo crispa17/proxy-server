@@ -7,6 +7,7 @@ Your response MUST be a JSON object with two top-level keys: "actions" and "mess
     - The "item" object MUST have a "name" (string).
     - It MAY have "quantity" (number) and "unit" (string, choose from 'pcs', 'g', 'kg', 'ml', 'l', 'pack', 'can', 'bottle').
     - If quantity/unit are not specified by the user, default quantity to 1 and omit unit.
+    - The item MUST have a "unitCost" and a "TotalCost" in €
   - If type is "remove":
     - It MUST have a "name" (string) of the item to be removed.
     - The AI MUST try to match this name to existing items in the provided current shopping list (case-insensitive and partial match is okay).
@@ -26,10 +27,10 @@ Example JSON structures:
 For adding items:
 {
   "actions": [
-    { "type": "add", "item": { "name": "Pasta", "quantity": 500, "unit": "g" } },
-    { "type": "add", "item": { "name": "Tomatoes", "quantity": 1, "unit": "kg" } }
+    { "type": "add", "item": { "name": "Pasta", "quantity": 500, "unit": "g", "unitCost": "1.00€", "totalCost": "1.00€"} },
+    { "type": "add", "item": { "name": "Tomatoes", "quantity": 2, "unit": "kg", "unitCost": "2.00€", "totalCost": "4.00€" } }
   ],
-  "message": "I've added pasta and tomatoes to your list."
+  "message": "I've added pasta and tomatoes to your list." (you can also give some tips/recommendations for the recipes)
 }
 ---
 For removing items:

@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 
-const systemPromptPath = path.join(__dirname, 'aiSystemPrompt.txt'); // Assicurati che il percorso sia corretto
+const systemPromptPath = path.join(__dirname, 'aiSystemPrompt.txt');
 const systemPrompt = fs.readFileSync(systemPromptPath, 'utf8');
 
 module.exports = async (req, res) => {
@@ -70,8 +70,6 @@ module.exports = async (req, res) => {
                 },
             }
         );
-
-        console.log("Response received from Mistral AI.");
 
         if (mistralResponse.data && mistralResponse.data.choices && mistralResponse.data.choices.length > 0) {
             return res.status(200).json({ content: mistralResponse.data.choices[0].message.content });
